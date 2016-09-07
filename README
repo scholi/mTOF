@@ -2,6 +2,6 @@ Experimental Matlab library to read and parse ionTOF ITA,ITM and ITS fileformat.
 
 For the moment only the ITA files are supported for Matlab. Check the python library pyTOF ( https://github.com/scholi/pyTOF ) for more.
 
-This library is in its early stage and as no docuomentation are available for the ionTOF fileformat this library might be full of mistakes. Please check the informations before scientific publications...
+This library is in its early stage and as no documentation is available for the ionTOF fileformat this library might contains some mistakes. Please check the informations before scientific publications...
 
 Enjoy!

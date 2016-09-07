@@ -7,6 +7,7 @@ classdef ITA
         fid % store the file id
         type % should be always ITStrF01
         root % root Block element
+        Peaks % Peaks list
     end
     
     methods
@@ -18,6 +19,7 @@ classdef ITA
                 error(strcat('The filename "',filename,'" does not seem to be a valid ITA file'));
             end
             self.root = Block(self.fid);
+            self.Peaks = self.getPeaks();
         end
         function Tot = getImageById(self, id)
             sx = self.root.goto('filterdata/TofCorrection/ImageStack/Reduced Data/ImageStackScans/Image.XSize').getULong(); % Image size (X) in piexels
