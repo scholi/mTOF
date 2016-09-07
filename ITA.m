@@ -8,6 +8,10 @@ classdef ITA
         type % should be always ITStrF01
         root % root Block element
         Peaks % Peaks list
+        sx % image size in x
+        sy % image size in y
+        Nscan % number of scans
+        Nimg % Number of images (channels)
     end
     
     methods
@@ -20,17 +24,71 @@ classdef ITA
             end
             self.root = Block(self.fid);
             self.Peaks = self.getPeaks();
+            self.sx = self.root.goto('filterdata/TofCorrection/ImageStack/Reduced Data/ImageStackScans/Image.XSize').getULong(); % Image size (X) in piexels
+            self.sy = self.root.goto('filterdata/TofCorrection/ImageStack/Reduced Data/ImageStackScans/Image.YSize').getULong(); % Image size (Y) in piexels
+            self.Nscan = self.root.goto('filterdata/TofCorrection/ImageStack/Reduced Data/ImageStackScans/Image.NumberOfScans').getULong();
+            self.Nimg = self.root.goto('filterdata/TofCorrection/ImageStack/Reduced Data/ImageStackScans/Image.NumberOfImages').getULong() ; 
         end
-        function Tot = getImageById(self, id)
-            sx = self.root.goto('filterdata/TofCorrection/ImageStack/Reduced Data/ImageStackScans/Image.XSize').getULong(); % Image size (X) in piexels
-            sy = self.root.goto('filterdata/TofCorrection/ImageStack/Reduced Data/ImageStackScans/Image.YSize').getULong(); % Image size (Y) in piexels
-            Nscan = self.root.goto('filterdata/TofCorrection/ImageStack/Reduced Data/ImageStackScans/Image.NumberOfScans').getULong();
-            Nimg = self.root.goto('filterdata/TofCorrection/ImageStack/Reduced Data/ImageStackScans/Image.NumberOfImages').getULong() ;       
-            Tot = zeros(sx,sy);
-            for i = 0:Nscan-1
-                Raw = self.root.goto(strcat('filterdata/TofCorrection/ImageStack/Reduced Data/ImageStackScans/Image/ImageArray.Long[',num2str(i),']')).getBin();
-                Tot = Tot + reshape(typecast(zlibdecode(uint8(Raw)),'single'),[sy,sx])';
+        function out = getChannelNameById(self, id)
+            for i = 1:length(self.Peaks)
+                if self.Peaks{i,1}==id
+                    out = self.Peaks{i,3};
+                    return
+                end
             end
+        end
+        function res = getChannelByName(self, name)
+            res={};
+            ri=1;
+            for i = 1:length(self.Peaks)
+                ma=regexp(self.Peaks{i,3},name);
+                if length(ma)>0
+                    res{ri}=self.Peaks(i,:)';
+                    ri =ri+1;
+                end
+            end
+            res = horzcat(res{:});
+        end
+        function out = getImageSumById(self, channels, scans)
+            if nargin<3
+                scans = 1:self.Nscan;
+            end
+            out = zeros(self.sx,self.sy);
+            for i = 1:length(channels)
+                for j = 1:length(scans)
+                    Z = self.getImageById(channels(i), scans(j));
+                    out = out + Z;
+                end
+            end     
+        end
+        function [out, channels] = getImageSumByName(self, names, scans)
+            if nargin<3
+                scans = 0:self.Nscan-1;
+            end
+            out = zeros(self.sx,self.sy);
+            channels = self.getChannelByName(names);
+            for i = 1:length(channels)
+                for j = 1:length(scans)
+                    ch =channels{1,i};
+                    Z = self.getImageById(ch, scans(j));
+                    out = out + Z;
+                end
+            end     
+        end
+        function res = getChannelByMass(self, mass)
+            res={};
+            ri=1;
+            for i = 1:length(self.Peaks)
+                if self.Peaks{i,5}<=mass && self.Peaks{i,6}>=mass
+                    res{ri}=self.Peaks(i,:)';
+                    ri =ri+1;
+                end
+            end
+            res = horzcat(res{:});
+        end
+        function Tot = getImageById(self, id, scan)
+            Raw = self.root.goto(strcat('filterdata/TofCorrection/ImageStack/Reduced Data/ImageStackScans/Image[',num2str(id),']/ImageArray.Long[',num2str(scan),']')).getBin();
+            Tot = reshape(typecast(zlibdecode(uint8(Raw)),'single'),[self.sy,self.sx])';
         end
         function Peaks = getPeaks(self)
             Peaks={};
