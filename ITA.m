@@ -67,7 +67,7 @@ classdef ITA
             end
             out = zeros(self.sx,self.sy);
             channels = self.getChannelByName(names);
-            for i = 1:length(channels)
+            for i = 1:size(channels,2)
                 for j = 1:length(scans)
                     ch =channels{1,i};
                     Z = self.getImageById(ch, scans(j));
