@@ -64,11 +64,13 @@ classdef ITA
         function [out, channels] = getImageSumByMass(self, masses, scans)
             if nargin<3
                 scans = 0:self.Nscan-1;
-            end   
+            end
+            channels = {};
             out = zeros(self.sx,self.sy);
             for i = 1:length(masses)
-                channels = self.getChannelByMass(masses(i));
-                ch = channels{1,size(channels,2)};
+                C = self.getChannelByMass(masses(i));
+                channels(:,i)=C(:,size(C,2));
+                ch = C{1,size(C,2)};
                 for j = 1:length(scans)
                     Z = self.getImageById(ch, scans(j));
                     out = out + Z;
