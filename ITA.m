@@ -77,6 +77,17 @@ classdef ITA
                 end
             end     
         end
+        function [out, channels] = getAddedImageByMass(self, masses)
+            channels = {};
+            out = zeros(self.sx,self.sy);
+            for i = 1:length(masses)
+                C = self.getChannelByMass(masses(i));
+                channels(:,i)=C(:,size(C,2));
+                ch = C{1,size(C,2)};
+                Z = self.getAddedImageById(ch);
+                out = out + Z;
+            end     
+        end
         function [out, channels] = getImageSumByName(self, names, scans)
             if nargin<3
                 scans = 0:self.Nscan-1;
@@ -91,6 +102,15 @@ classdef ITA
                 end
             end     
         end
+        function [out, channels] = getAddedImageByName(self, names)
+            out = zeros(self.sx,self.sy);
+            channels = self.getChannelByName(names);
+            for i = 1:size(channels,2)
+                ch =channels{1,i};
+                Z = self.getAddedImageById(ch);
+                out = out + Z;
+            end     
+        end
         function res = getChannelByMass(self, mass)
             res={};
             ri=1;
@@ -101,6 +121,10 @@ classdef ITA
                 end
             end
             res = horzcat(res{:});
+        end
+        function Tot = getAddedImageById(self, id)
+            Raw = self.root.goto(strcat('filterdata/TofCorrection/ImageStack/Reduced Data/ImageStackScansAdded/Image[',num2str(id),']/ImageArray.Long')).getBin();
+            Tot = reshape(typecast(zlibdecode(uint8(Raw)),'single'),[self.sy,self.sx])';
         end
         function Tot = getImageById(self, id, scan)
             Raw = self.root.goto(strcat('filterdata/TofCorrection/ImageStack/Reduced Data/ImageStackScans/Image[',num2str(id),']/ImageArray.Long[',num2str(scan),']')).getBin();
