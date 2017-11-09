@@ -5,3 +5,7 @@ For the moment only the ITA files are supported for Matlab. Check the python lib
 This library is in its early stage and as no documentation is available for the ionTOF fileformat this library might contains some mistakes. Please check the informations before scientific publications...
 
 Enjoy!
+
+## Note
+This library is not maintained and is deprecated.
+Plase either use the python library pySPM (https://github.com/scholi/pySPM) or update this one.
